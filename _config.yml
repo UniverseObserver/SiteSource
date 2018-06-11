@@ -7,7 +7,7 @@ description: 揭穿中医
 url: https://tcmexposed.github.io/
 
 exclude: ["utils/**/*","Gemfile","Gemfile.lock"]
-include: [".nojekyll"]
+include: [".nojekyll","README.md"]
 
 permalink: /:year/:month/:day/:title:output_ext
 

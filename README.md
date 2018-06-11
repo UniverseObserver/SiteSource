@@ -9,4 +9,4 @@
 
 欢迎大家踊跃投稿推荐文章！
 
-通过 Github Issues 投稿：<a href="https://github.com/TCMExposed/SiteSource/issues/new?title=投稿：&body=文章链接：%20%0A文章分类：%20" target="_blank">https://github.com/TCMExposed/SiteSource/</a>
+通过 Github Issues 投稿：<a href="https://github.com/TCMExposed/SiteSource/issues/new?title=投稿：&amp;body=文章链接：%20%0A文章分类：%20" target="_blank">https://github.com/TCMExposed/SiteSource/</a>
