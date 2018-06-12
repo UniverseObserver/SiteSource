@@ -63,7 +63,7 @@ function main() {
     ans = ans.trim().split(/[\n\r]+/);
     for (var i=0;i<ans.length;i+=2) {
       var a = ans[i].trim().split(',');
-      var cats = a[0],tags = a[1] || "";
+      var cats = a[0],tags = a[1];
       var url = ans[i+1];
       console.log("Sync: "+url);
       var aid = url.match(/\d+$/)[0];
@@ -124,8 +124,8 @@ function main() {
               .replaceAll("{{question.title}}",a.question.title + " - by " + a.author.name)
               .replaceAll("{{question.id}}",a.question.id)
               .replaceAll("{{answer.id}}",a.id)
-              .replaceAll("{{categories}}",cats)
-              .replaceAll("{{tags}}",tags);
+              .replaceAll("{{categories}}",cats || "")
+              .replaceAll("{{tags}}",tags || "");
 
         console.log("Download at: /_posts/" + file);
         writeFileWith(postPath,post);
