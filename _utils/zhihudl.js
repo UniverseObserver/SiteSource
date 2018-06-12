@@ -35,7 +35,7 @@ main();
 
 function main() {
   var args = process.argv.slice(2);
-  var actions = {answer:dlAnswer,post:dlPost};
+  var actions = {answer:dlAnswer,post:dlPost,sync:sync};
 
   if (!actions.hasOwnProperty(args[0])) {
     console.info("Download Zhihu articles.\nActions: "+Object.keys(actions));
@@ -55,17 +55,46 @@ function main() {
   }).forEach((a)=>SessionCookie[a[0]]=a[1]);
 
   var act = actions[args[0]];
-  act(args[1]);
+  act.apply(null,args.slice(1));
 
 
-  function dlAnswer(aid) {
+  function sync(force) {
+    var ans = readFile("answers.txt");
+    ans = ans.trim().split(/[\n\r]+/);
+    for (var i=0;i<ans.length;i+=2) {
+      var a = ans[i].trim().split(',');
+      var cats = a[0],tags = a[1] || "";
+      var url = ans[i+1];
+      console.log("Sync: "+url);
+      var aid = url.match(/\d+$/)[0];
+      dlAnswer(aid,cats,tags,force);
+    }
+  }
+
+
+  function dlAnswer(aid,cats,tags,force) {
+
     getAnswer(aid).then(a => {
       /* {author:{name: '',user_type: 'people',id: '2e80081026e7335ea4ef8b7906103f60' },
       question:{title: '',id: 21476991,created:2334},
       updated_time: 1501092668,
-      content: 'XXX',created_time: 1465144810,id: 104484293}
+      content: 'XXX',created_time: 1465144810,updated_time:234,id: 104484293}
       */
       setTimeout(() => { // WTF Node.js Promise swallowed my exception!!! Fuck!!!
+        var d = new Date(a.created_time*1000);
+        d = d.getFullYear()+"-"+(d.getMonth()+1)+"-" + d.getDate();
+        var file = d+"-"+a.question.title.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,'') + "-" + a.id +".html";
+        var postPath = path.normalize(__dirname + "/../_posts/" + file);
+
+        if (!force && fs.existsSync(postPath)) {
+          var stat = fs.statSync(postPath);
+          var mtime = stat.mtime.getTime();
+          if (mtime > a.updated_time * 1000) {
+            console.log("Nothing changed: " + file);
+            return;
+          }
+        }
+
         var content = a.content.replace(/<noscript>.+?<\/noscript>/g,'')
                        .replace(/<figure>|<\/figure>/g,'');
 
@@ -79,7 +108,7 @@ function main() {
 
           var newSrc = "/assets/images/posts/zhihu-img-"+urlFilename(src);
           download(src,__dirname + "/.." + newSrc);
-          return "<img width='"+width+"' src='"+newSrc+"' />";
+          return "<img class='zhihu-img' width='"+width+"' src='"+newSrc+"' />";
         });
 
         var description = content.replace(/<[^<>]+>|\s+/g,'').slice(0,200);
@@ -94,14 +123,12 @@ function main() {
               .replaceAll("{{answer.description}}",description)
               .replaceAll("{{question.title}}",a.question.title + " - by " + a.author.name)
               .replaceAll("{{question.id}}",a.question.id)
-              .replaceAll("{{answer.id}}",a.id);
+              .replaceAll("{{answer.id}}",a.id)
+              .replaceAll("{{categories}}",cats)
+              .replaceAll("{{tags}}",tags);
 
-        var d = new Date(a.created_time*1000);
-        d = d.getFullYear()+"-"+(d.getMonth()+1)+"-" + d.getDate();
-        var file = d+"-"+a.question.title.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,'') + "-" + a.id +".html";
-        file = path.normalize(__dirname + "/../_posts/" + file);
-        console.log("Download at:\n" + file);
-        writeFileWith(file,post);
+        console.log("Download at: /_posts/" + file);
+        writeFileWith(postPath,post);
       },0);
 
 
