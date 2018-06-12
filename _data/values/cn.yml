@@ -7,6 +7,6 @@ categories: 分类
 about: 关于
 thanks: " ， Powered by"
 page: 当前页
-newer_post: 前一篇
-older_post: 后一篇
+newer_post: 上一页
+older_post: 下一页
 top_posts: 置顶文章
